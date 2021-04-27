@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:13.2-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=todos
+
+  api:
+    image: skillfactoryteam/todos-api:1.0
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/todos
+    depends_on:
+      - db
+
+  client:
+    image: skillfactoryteam/vue-todos:1.0
+    environment:
+      - VUE_APP_BACKEND_URL=http://localhost/api
+      - PORT=8081
+    depends_on:
+      - api
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - client
+      - api
